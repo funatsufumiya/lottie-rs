@@ -4,4 +4,4 @@ resolver = "2"
 exclude = ["crates/renderer-notan"]
 
 [patch.crates-io]
-fontkit = { git = "https://github.com/alibaba/font-toolkit", rev = "c3e2bc4" }
+fontkit = { git = "https://github.com/alibaba/font-toolkit", rev = "99ffd9efe851e2b9a06f93b4fae4363c372be789" }
