@@ -1,7 +1,8 @@
 use bevy::math::Vec2;
 use bevy::prelude::{
-    Bundle, Color, Component, ComputedVisibility, Deref, GlobalTransform, Transform, Visibility,
+    Bundle, Color, Component, Deref, GlobalTransform, Transform, Visibility,
 };
+use bevy::render::view::{InheritedVisibility, ViewVisibility};
 use bevy::sprite::Mesh2dHandle;
 use lyon::path::Path as LyonPath;
 use lyon::tessellation::{FillOptions, StrokeOptions};
@@ -55,7 +56,8 @@ pub struct ShapeBundle {
     pub global_transform: GlobalTransform,
     pub mesh: Mesh2dHandle,
     pub visibility: Visibility,
-    pub computed_visibility: ComputedVisibility,
+    pub inherited_visibility: InheritedVisibility,
+    pub view_visibility: ViewVisibility,
 }
 
 impl ShapeBundle {
@@ -68,7 +70,9 @@ impl ShapeBundle {
             global_transform: GlobalTransform::default(),
             mesh: Mesh2dHandle::default(),
             visibility: Visibility::default(),
-            computed_visibility: ComputedVisibility::default(),
+            // computed_visibility: ComputedVisibility::default(),
+            inherited_visibility: InheritedVisibility::default(),
+            view_visibility: ViewVisibility::default(),
         }
     }
 }

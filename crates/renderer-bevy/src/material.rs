@@ -1,7 +1,9 @@
-use bevy::asset::AssetPath;
+use bevy::asset::{Asset, AssetPath};
 use bevy::math::Vec2;
 use bevy::prelude::{Color, Handle, Image, UVec4, Vec4};
-use bevy::reflect::{TypePath, TypeUuid};
+// use bevy::reflect::{TypePath, TypeUuid};
+use bevy::reflect::TypePath;
+// use bevy
 use bevy::render::mesh::MeshVertexBufferLayout;
 use bevy::render::render_resource::{
     AsBindGroup, RenderPipelineDescriptor, ShaderRef, ShaderType, SpecializedMeshPipelineError,
@@ -11,8 +13,10 @@ use bevy::sprite::{Material2d, Material2dKey};
 use lottie_core::prelude::GradientColor;
 use wgpu::*;
 
-#[derive(AsBindGroup, TypeUuid, Clone, TypePath)]
-#[uuid = "e66b6c0e-bcac-4128-bdc6-9a3cace5c2fc"]
+// #[derive(AsBindGroup, TypeUuid, Clone, TypePath)]
+// #[derive(AsBindGroup, Clone, TypePath)]
+#[derive(Asset, AsBindGroup, Clone, TypePath)]
+// #[uuid = "e66b6c0e-bcac-4128-bdc6-9a3cace5c2fc"]
 // #[uniform(3, GradientDataUniform)]
 #[bind_group_data(GradientDataKey)]
 pub struct LottieMaterial {
@@ -85,6 +89,10 @@ impl Material2d for LottieMaterial {
             fragment.shader_defs.push("USE_GRADIENT".into());
         }
         Ok(())
+    }
+    
+    fn depth_bias(&self) -> f32 {
+        0.0
     }
 }
 

@@ -4,7 +4,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use bevy::app::{AppExit, Plugin, ScheduleRunnerPlugin};
-use bevy::core_pipeline::clear_color::ClearColorConfig;
+// use bevy::core_pipeline::clear_color::ClearColorConfig;
 use bevy::ecs::system::Resource;
 use bevy::prelude::*;
 use bevy::render::camera::RenderTarget;
@@ -45,6 +45,7 @@ use frame_capture::{ImageCopier, ImageCopyPlugin, ImageToSave};
 use material::LottieMaterial;
 use ordered_float::OrderedFloat;
 use plugin::LottiePlugin;
+use bevy::ecs::query::With;
 use render::*;
 
 #[derive(Component)]
@@ -184,6 +185,7 @@ impl Renderer for BevyRenderer {
                 },
             });
         self.app
+            .insert_resource(ClearColor(Color::NONE))
             .insert_resource(Msaa::Sample4)
             .add_plugins(default_plugins)
             // .add_plugin(FrameTimeDiagnosticsPlugin)
@@ -230,7 +232,7 @@ impl Renderer for BevyRenderer {
                 )))
                 .add_systems(Last, save_img);
         } else {
-            self.app.add_plugins(WinitPlugin);
+            self.app.add_plugins(WinitPlugin { run_on_any_thread: true });
         }
     }
 
@@ -256,7 +258,7 @@ fn setup_system(
         1.0
     };
     let mut camera = Camera2dBundle::default();
-    camera.camera_2d.clear_color = ClearColorConfig::Custom(Color::NONE);
+    // camera.camera_2d.clear_color = ClearColorConfig::Custom(Color::NONE);
     let transform = Transform::from_scale(Vec3::new(1.0, -1.0, 1.0));
     camera.transform = transform;
     let mask_count = lottie
@@ -297,7 +299,7 @@ fn setup_system(
     let mask_texture_handle = image_assets.add(mask);
     let mask_camera = Camera2dBundle {
         camera_2d: Camera2d {
-            clear_color: ClearColorConfig::Custom(Color::NONE),
+            // clear_color: ClearColorConfig::Custom(Color::NONE),
         },
         camera: Camera {
             target: RenderTarget::Image(mask_texture_handle.clone()),
@@ -508,8 +510,9 @@ fn animate_system(
     mut visibility_query: Query<(
         Entity,
         &mut Visibility,
-        &ComputedVisibility,
-        Option<(&AudioSink, With<LottieAudio>)>,
+        &mut ViewVisibility,
+        // Option<(&AudioSink, With<LottieAudio>)>,
+        Option<(&AudioSink, Has<LottieAudio>)>,
         &FrameTracker,
     )>,
     mut transform_animation: Query<(&mut Animator<Transform>, &FrameTracker)>,
@@ -590,7 +593,8 @@ fn animate_system(
     {
         let visible = tracker.value(current_frame).is_some();
         if let Some(sink) = audio_sink {
-            if !computed_visibility.is_visible() && visible {
+            // if !computed_visibility.is_visible() && visible {
+            if !computed_visibility.get() && visible {
                 sink.0.play();
             } else {
                 sink.0.pause();

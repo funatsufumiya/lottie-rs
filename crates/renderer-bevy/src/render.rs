@@ -2,7 +2,8 @@ use std::time::Duration;
 
 use bevy::ecs::system::EntityCommands;
 use bevy::prelude::{Entity, Image, Transform};
-use bevy::render::texture::{CompressedImageFormats, ImageType, TextureError};
+use bevy::render::render_asset::RenderAssetUsages;
+use bevy::render::texture::{CompressedImageFormats, ImageSampler, ImageType, TextureError};
 use bevy::render::view::RenderLayers;
 use bevy_tweening::{Animator, EaseMethod, Sequence, Tracks, Tween};
 use lottie_core::prelude::{Transform as LottieTransform, *};
@@ -76,12 +77,14 @@ impl<'a> BevyStagedLayer<'a> {
                         ImageType::MimeType(mime.mime_type()),
                         CompressedImageFormats::NONE,
                         true,
+                        ImageSampler::default(),
+                        RenderAssetUsages::MAIN_WORLD | RenderAssetUsages::RENDER_WORLD,
                     )?;
                     // If the media has dimensions set, scale the image
                     let size = image.size();
                     initial_transform.scale = Vec3::new(
-                        media.width as f32 / size.x,
-                        media.height as f32 / size.y,
+                        media.width as f32 / size.x as f32,
+                        media.height as f32 / size.y as f32,
                         1.0,
                     );
                     let handle = self.image_assets.add(image);
@@ -141,7 +144,8 @@ impl<'a> BevyStagedLayer<'a> {
             let id = match shape.shape.shape {
                 Shape::Group { shapes } => {
                     // spawn a new group
-                    let mut group = c.commands().spawn(Name::new(
+                    let mut commands = c.commands();
+                    let mut group = commands.spawn(Name::new(
                         shape.shape.name.unwrap_or_else(|| String::from("Group")),
                     ));
                     group.insert(VisibilityBundle::default());
@@ -150,8 +154,7 @@ impl<'a> BevyStagedLayer<'a> {
                     let zindex = -1.0 * zindex;
                     transform.translation.z = zindex;
                     group.insert(TransformBundle::from_transform(transform));
-                    if let Some(animator) = self.transform_animator(&shape.transform, zindex, None)
-                    {
+                    if let Some(animator) = self.transform_animator(&shape.transform, zindex, None) {
                         group.insert(animator);
                     }
                     let mut new_group = ShapeGroup { shapes };
@@ -169,7 +172,7 @@ impl<'a> BevyStagedLayer<'a> {
                     self.spawn_shapes(&new_group, step, &mut group);
                     Some(group.id())
                 }
-                _ => self.spawn_shape(zindex, shape, c.commands()),
+                _ => self.spawn_shape(zindex, shape, &mut c.commands()),
             };
             if let Some(id) = id {
                 log::trace!("layer {:?} get a child {:?}", c.id(), id);

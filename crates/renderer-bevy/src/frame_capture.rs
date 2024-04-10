@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use bevy::prelude::*;
 use bevy::render::render_asset::RenderAssets;
-use bevy::render::render_graph::{NodeRunError, RenderGraph, RenderGraphContext};
+use bevy::render::render_graph::{NodeRunError, RenderGraph, RenderGraphContext, RenderLabel};
 use bevy::render::render_resource::Buffer;
 use bevy::render::renderer::{RenderContext, RenderDevice, RenderQueue};
 use bevy::render::{render_graph, Extract, RenderApp};
@@ -149,7 +149,10 @@ pub fn receive_images(
     }
 }
 
-pub const IMAGE_COPY: &str = "image_copy";
+// pub const IMAGE_COPY: &str = "image_copy";
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, RenderLabel)]
+pub struct ImageCopy;
 
 pub struct ImageCopyPlugin;
 
@@ -163,11 +166,18 @@ impl Plugin for ImageCopyPlugin {
 
         let mut graph = render_app.world.get_resource_mut::<RenderGraph>().unwrap();
 
-        graph.add_node(IMAGE_COPY, ImageCopyDriver::default());
+        // graph.add_node(IMAGE_COPY, ImageCopyDriver::default());
+        graph.add_node(ImageCopy, ImageCopyDriver::default());
 
-        graph.add_node_edge(bevy::render::main_graph::node::CAMERA_DRIVER, IMAGE_COPY)
+        graph.add_node_edge(bevy::render::graph::CameraDriverLabel, ImageCopy);
     }
 }
 
 #[derive(Component, Deref, DerefMut)]
 pub struct ImageToSave(pub Handle<Image>);
+
+impl From<&ImageToSave> for AssetId<Image> {
+    fn from(image: &ImageToSave) -> Self {
+        image.0.id()
+    }
+}

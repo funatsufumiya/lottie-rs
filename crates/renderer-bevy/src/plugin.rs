@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy::render::mesh::{Indices, MeshVertexAttribute};
+use bevy::render::render_asset::{RenderAsset, RenderAssetUsages};
 use bevy::render::render_resource::*;
 use bevy::sprite::*;
 use lottie_core::tiny_skia_path as ts;
@@ -180,8 +181,9 @@ fn stroke(
 }
 
 fn build_mesh(buffers: &VertexBuffers) -> Mesh {
-    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
-    mesh.set_indices(Some(Indices::U32(buffers.indices.clone())));
+    let mut mesh = Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::RENDER_WORLD | RenderAssetUsages::MAIN_WORLD);
+    // mesh.set_indices(Some(Indices::U32(buffers.indices.clone())));
+    mesh.insert_indices(Indices::U32(buffers.indices.clone()));
     let verts = buffers
         .vertices
         .iter()
