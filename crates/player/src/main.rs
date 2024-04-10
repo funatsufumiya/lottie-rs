@@ -1,4 +1,4 @@
-#![feature(path_file_prefix)]
+// #![feature(path_file_prefix)]
 use std::fs::{self, File};
 use std::io::{BufWriter, Write};
 use std::path::Path;
@@ -42,14 +42,21 @@ struct Args {
 //     lines.line(Vec3::new(250.0, 0.0, 0.0), Vec3::new(-250.0, 0.0, 0.0), 1.0);
 // }
 
+fn file_prefix(path: &Path) -> Option<&str> {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .map(|name| name.split('.').next().unwrap())
+}
+
 fn main() -> Result<(), Error> {
     let args = Args::parse();
     let path = Path::new(&args.input);
     let mut root_path = path.to_path_buf();
     root_path.pop();
-    let mut filename = path
-        .file_prefix()
-        .and_then(|name| name.to_str())
+    // let mut filename = path
+    //     .file_prefix()
+        // .and_then(|name| name.to_str())
+    let mut filename = file_prefix(path)
         .unwrap()
         .to_string();
     if filename.is_empty() {
